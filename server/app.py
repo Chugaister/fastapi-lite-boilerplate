@@ -5,16 +5,16 @@ from contextlib import asynccontextmanager
 import core.exceptions.base
 from api import router
 from core.middlewares.middlewares import XProcessTimeMiddleware
-from core.middlewares.exchandlers import HTTPErrorExceptionHandler
+# from core.middlewares.exchandlers import HTTPErrorExceptionHandler
 
 
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(router, prefix="/api")
 
 
-def init_exchandlers(app_: FastAPI) -> None:
-    app_.add_exception_handler(core.exceptions.base.HTTPError, HTTPErrorExceptionHandler.handle)
-
+# def init_exchandlers(app_: FastAPI) -> None:
+#     app_.add_exception_handler(core.exceptions.base.HTTPError, HTTPErrorExceptionHandler.handle)
+#
 
 def init_middlewares(app_: FastAPI) -> None:
     app_.add_middleware(XProcessTimeMiddleware)
@@ -47,7 +47,7 @@ async def lifespan(app_: FastAPI):
 def create_app() -> FastAPI:
     app_ = FastAPI(lifespan=lifespan)
     init_routers(app_)
-    init_exchandlers(app_)
+    # init_exchandlers(app_)
     init_middlewares(app_)
     return app_
 

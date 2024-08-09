@@ -1,53 +1,55 @@
 from http import HTTPStatus
+from typing import Optional
+from fastapi import HTTPException
 
 
-class HTTPError(Exception):
-    code = HTTPStatus.BAD_GATEWAY
-    error_code = HTTPStatus.BAD_GATEWAY
-    message = HTTPStatus.BAD_GATEWAY.description
-
-    def __init__(self, message=None):
-        if message:
-            self.message = message
+HTTPException.default_status_status_code = HTTPStatus.BAD_REQUEST
 
 
-class BadRequestException(HTTPError):
-    code = HTTPStatus.BAD_REQUEST
-    error_code = HTTPStatus.BAD_REQUEST
-    message = HTTPStatus.BAD_REQUEST.description
+class CustomHTTPException(HTTPException):
+    status_code = HTTPStatus.BAD_REQUEST
+    detail = HTTPStatus.BAD_REQUEST.description
+
+    def __init__(self, detail: Optional[str] = None, headers: Optional[dict] = None) -> None:
+        if detail is not None:
+            self.detail = detail
+        super().__init__(
+            status_code=self.status_code,
+            detail=self.detail,
+            headers=headers
+        )
 
 
-class NotFoundException(HTTPError):
-    code = HTTPStatus.NOT_FOUND
-    error_code = HTTPStatus.NOT_FOUND
-    message = HTTPStatus.NOT_FOUND.description
+class BadRequestException(CustomHTTPException):
+    status_code = HTTPStatus.BAD_REQUEST
+    detail = HTTPStatus.BAD_REQUEST.description
 
 
-class ForbiddenException(HTTPError):
-    code = HTTPStatus.FORBIDDEN
-    error_code = HTTPStatus.FORBIDDEN
-    message = HTTPStatus.FORBIDDEN.description
+class NotFoundException(CustomHTTPException):
+    status_code = HTTPStatus.NOT_FOUND
+    detail = HTTPStatus.NOT_FOUND.description
 
 
-class UnauthorizedException(HTTPError):
-    code = HTTPStatus.UNAUTHORIZED
-    error_code = HTTPStatus.UNAUTHORIZED
-    message = HTTPStatus.UNAUTHORIZED.description
+class ForbiddenException(CustomHTTPException):
+    status_code = HTTPStatus.FORBIDDEN
+    detail = HTTPStatus.FORBIDDEN.description
 
 
-class UnprocessableEntity(HTTPError):
-    code = HTTPStatus.UNPROCESSABLE_ENTITY
-    error_code = HTTPStatus.UNPROCESSABLE_ENTITY
-    message = HTTPStatus.UNPROCESSABLE_ENTITY.description
+class UnauthorizedException(CustomHTTPException):
+    status_code = HTTPStatus.UNAUTHORIZED
+    detail = HTTPStatus.UNAUTHORIZED.description
 
 
-class ConflictException(HTTPError):
-    code = HTTPStatus.CONFLICT
-    error_code = HTTPStatus.CONFLICT
-    message = HTTPStatus.CONFLICT.description
+class UnprocessableEntity(CustomHTTPException):
+    status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    detail = HTTPStatus.UNPROCESSABLE_ENTITY.description
 
 
-class MethodNotImplementedException(HTTPError):
-    code = HTTPStatus.NOT_IMPLEMENTED
-    error_code = HTTPStatus.NOT_IMPLEMENTED
-    message = HTTPStatus.NOT_IMPLEMENTED.description
+class ConflictException(CustomHTTPException):
+    status_code = HTTPStatus.CONFLICT
+    detail = HTTPStatus.CONFLICT.description
+
+
+class MethodNotImplementedException(CustomHTTPException):
+    status_code = HTTPStatus.NOT_IMPLEMENTED
+    detail = HTTPStatus.NOT_IMPLEMENTED.description

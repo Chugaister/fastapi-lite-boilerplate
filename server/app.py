@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 import core.exceptions.base
 from api import router
@@ -28,8 +29,23 @@ def init_middlewares(app_: FastAPI) -> None:
     )
 
 
+async def on_startup():
+    pass
+
+
+async def on_shutdown():
+    pass
+
+
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    await on_startup()
+    yield
+    await on_shutdown()
+
+
 def create_app() -> FastAPI:
-    app_ = FastAPI()
+    app_ = FastAPI(lifespan=lifespan)
     init_routers(app_)
     init_exchandlers(app_)
     init_middlewares(app_)
@@ -37,26 +53,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
-
-async def init_models():
-    from app import models  # ignore unused import statement warning
-    from core.database.base import Base
-    from core.database.session import engine
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)  # uncomment it if you want to drop the database. AT YOUR RISK!!!
-        await conn.run_sync(Base.metadata.create_all)
-
-
-async def init_database():
-    await init_models()
-
-
-@app.on_event("startup")
-async def on_startup():
-    await init_database()
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    pass

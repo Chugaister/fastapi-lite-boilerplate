@@ -1,14 +1,15 @@
 from fastapi import APIRouter
+from fastapi import HTTPException
 
 from app.schemas.responses.common import MessageResponse
+from core.exceptions.base import *
 
 
 system_router = APIRouter(tags=["System"])
 
 
 @system_router.get(
-    "/ping",
-
+    "/ping"
 )
 async def ping() -> MessageResponse:
     return MessageResponse(message="pong")
@@ -16,7 +17,5 @@ async def ping() -> MessageResponse:
 
 @system_router.get("/error")
 async def error() -> MessageResponse:
-    from core.exceptions.base import NotFoundException
-    raise NotFoundException("Fuck")
-    return MessageResponse(message="fuck")
-
+    raise BadRequestException("Bad request")
+    return MessageResponse(message="message")

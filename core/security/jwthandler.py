@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from core.exceptions.base import UnauthorizedException
-from core.config.config import config
+from server.config import config
 from jwt import decode, encode, ExpiredSignatureError, InvalidTokenError
 
 

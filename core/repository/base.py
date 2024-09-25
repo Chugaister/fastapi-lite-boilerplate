@@ -10,26 +10,26 @@ ModelType = TypeVar("ModelType", bound=Base)
 class BaseRepository(Generic[ModelType]):
     """Base class for data repositories."""
 
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, session: AsyncSession, model: Type[ModelType]):
+        self.session = session
         self.model_class: Type[ModelType] = model
 
-    async def create(self, session: AsyncSession, attributes: dict[str, Any] = None) -> ModelType:
+    async def create(self, attributes: dict[str, Any] = None) -> ModelType:
         if attributes is None:
             attributes = {}
         model = self.model_class(**attributes)
-        session.add(model)
+        self.session.add(model)
         return model
 
     async def get_all(
-            self, session: AsyncSession, skip: int = 0, limit: int = 100
+            self, skip: int = 0, limit: int = 100
     ) -> list[ModelType]:
         query = self.query()
         query = query.offset(skip).limit(limit)
-        return await self.all(session, query)
+        return await self.all(self.session, query)
 
     async def get_by(
             self,
-            session: AsyncSession,
             field: str,
             value: Any,
             unique: bool = False,
@@ -37,12 +37,12 @@ class BaseRepository(Generic[ModelType]):
         query = self.query()
         query = await self._get_by(query, field, value)
         if unique:
-            return await self.one(session, query)
+            return await self.one(self.session, query)
         else:
-            return await self.all(session, query)
+            return await self.all(self.session, query)
 
-    async def delete(self, session: AsyncSession, model: ModelType) -> None:
-        await session.delete(model)
+    async def delete(self, model: ModelType) -> None:
+        await self.session.delete(model)
 
     def query(
             self,
@@ -52,12 +52,12 @@ class BaseRepository(Generic[ModelType]):
         query = self._maybe_ordered(query, order_)
         return query
 
-    async def all(self, session: AsyncSession, query: Select) -> list[ModelType]:
-        result = await session.execute(query)
+    async def all(self, query: Select) -> list[ModelType]:
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
-    async def one(self, session: AsyncSession, query: Select) -> ModelType:
-        result = await session.execute(query)
+    async def one(self, query: Select) -> ModelType:
+        result = await self.session.execute(query)
         return result.scalars().first()
 
     async def _get_by(self, query: Select, field: str, value: Any) -> Select:
